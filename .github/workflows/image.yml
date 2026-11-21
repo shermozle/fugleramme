@@ -20,7 +20,7 @@ concurrency:
 
 env:
   # Public: the package inherited the repo's visibility when it was created.
-  IMAGE: ghcr.io/arnegiacomo/fugleramme
+  IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
   # A native runner per architecture - the arm build under qemu takes the better
