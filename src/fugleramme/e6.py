@@ -39,16 +39,24 @@ HEADER = struct.Struct("<4sHBBHHII")
 # The 13.3" Seeed panel needs a special scan order. The 7.3" and the BigMe
 # F7 Pro's paired controllers both consume the row-major stream directly.
 _SEEED_13_3 = PANEL_SIZES["13.3"]
-GLASSES = (PANEL_SIZES["7.3"], PANEL_SIZES["7.5"], _SEEED_13_3)
+_F7_PRO = PANEL_SIZES["7.5"]
+GLASSES = (PANEL_SIZES["7.3"], _F7_PRO, _SEEED_13_3)
 
 # `dither`'s palette order - black, white, yellow, red, blue, green - to the
 # controllers' codes, which skip 4.
 _NATIVE = np.array([0, 1, 2, 3, 5, 6], dtype=np.uint8)
 
 
+def native_frame(frame: Image.Image, rotation: int) -> Image.Image:
+    """The external panel's native orientation, before any controller split."""
+    glass = to_glass(frame, rotation)
+    # The F7 Pro's memory origin is the opposite corner from the render canvas.
+    return glass.transpose(Image.Transpose.ROTATE_180) if glass.size == _F7_PRO else glass
+
+
 def encode(frame: Image.Image, rotation: int, poll: int) -> bytes:
     """The dithered panel page, as it hangs, packed for the glass."""
-    glass = to_glass(frame, rotation)
+    glass = native_frame(frame, rotation)
     halves = glass.size == _SEEED_13_3
     # The 13.3"'s controllers read it a quarter turn clockwise from the landscape
     # glass, as Pimoroni's driver turns it.

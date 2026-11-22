@@ -42,7 +42,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 from .. import __version__, buttons, e6, modes, updates, wifi
 from ..languages import namer
-from ..panel import Panel, resolution_of, to_glass
+from ..panel import Panel, resolution_of
 from ..render.fonts import FONTS_DIR, TITLE_CUT
 from ..render.page import banded
 from ..render.paper import paper_tile
@@ -512,7 +512,7 @@ def make_handler(
                 return
             if pictured is None or pictured[0] is not frame:
                 buffer = io.BytesIO()
-                to_glass(*frame).save(buffer, format="PNG")
+                e6.native_frame(*frame).save(buffer, format="PNG")
                 pictured = (frame, buffer.getvalue())
             self._send_cached(pictured[1], "image/png")
 
