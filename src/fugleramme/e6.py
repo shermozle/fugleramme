@@ -50,8 +50,7 @@ _NATIVE = np.array([0, 1, 2, 3, 5, 6], dtype=np.uint8)
 def native_frame(frame: Image.Image, rotation: int) -> Image.Image:
     """The external panel's native orientation, before any controller split."""
     glass = to_glass(frame, rotation)
-    # The F7 Pro's memory origin is the opposite corner from the render canvas.
-    return glass.transpose(Image.Transpose.ROTATE_180) if glass.size == _F7_PRO else glass
+    return glass
 
 
 def encode(frame: Image.Image, rotation: int, poll: int) -> bytes:
