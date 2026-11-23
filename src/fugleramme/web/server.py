@@ -42,7 +42,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 from .. import __version__, buttons, e6, modes, updates, wifi
 from ..languages import namer
-from ..panel import Panel, resolution_of, to_glass
+from ..panel import Panel, resolution_of
 from ..render.fonts import FONTS_DIR, TITLE_CUT
 from ..render.page import banded
 from ..render.paper import paper_tile
@@ -251,7 +251,7 @@ def make_handler(
             self.end_headers()
             self._body(body)
 
-        def _send_cached(self, body: bytes, content_type: str):
+        def _send_cached(self, body: bytes, content_type: str, extra: dict[str, str] | None = None):
             # no-cache + ETag lets an unchanged refresh return a bodyless 304.
             etag = _etag(body)
             if self.headers.get("If-None-Match") == etag:
@@ -264,6 +264,8 @@ def make_handler(
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-cache")
             self.send_header("ETag", etag)
+            for name, value in (extra or {}).items():
+                self.send_header(name, value)
             self.end_headers()
             self._body(body)
 
@@ -496,12 +498,18 @@ def make_handler(
             if frame is None:
                 return
             if tuple(sorted(frame[0].size, reverse=True)) not in e6.GLASSES:
-                self._send(404, b'/frame.e6 is only for the 7.3" and 13.3" panels', "text/plain")
+                self._send(404, b"/frame.e6 cannot pack this panel size", "text/plain")
                 return
             poll = store.get().refresh_minutes
             if packed is None or packed[0] is not frame or packed[1] != poll:
                 packed = (frame, poll, e6.encode(*frame, poll))
-            self._send_cached(packed[2], "application/octet-stream")
+            local_time = time.strftime("%H:%M", time.localtime())
+            local_date = time.strftime("%Y-%m-%d", time.localtime())
+            self._send_cached(
+                packed[2],
+                "application/octet-stream",
+                {"X-Server-Time-Local": local_time, "X-Server-Date-Local": local_date},
+            )
 
         def _frame_png(self):
             # For a panel driven through inky: in the panel's native orientation, so it
@@ -512,7 +520,7 @@ def make_handler(
                 return
             if pictured is None or pictured[0] is not frame:
                 buffer = io.BytesIO()
-                to_glass(*frame).save(buffer, format="PNG")
+                e6.native_frame(*frame).save(buffer, format="PNG")
                 pictured = (frame, buffer.getvalue())
             self._send_cached(pictured[1], "image/png")
 
