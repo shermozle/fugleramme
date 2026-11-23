@@ -504,8 +504,11 @@ def make_handler(
             if packed is None or packed[0] is not frame or packed[1] != poll:
                 packed = (frame, poll, e6.encode(*frame, poll))
             local_time = time.strftime("%H:%M", time.localtime())
+            local_date = time.strftime("%Y-%m-%d", time.localtime())
             self._send_cached(
-                packed[2], "application/octet-stream", {"X-Server-Time-Local": local_time}
+                packed[2],
+                "application/octet-stream",
+                {"X-Server-Time-Local": local_time, "X-Server-Date-Local": local_date},
             )
 
         def _frame_png(self):
