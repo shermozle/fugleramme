@@ -56,6 +56,10 @@ def native_frame(frame: Image.Image, rotation: int) -> Image.Image:
 def encode(frame: Image.Image, rotation: int, poll: int) -> bytes:
     """The dithered panel page, as it hangs, packed for the glass."""
     glass = native_frame(frame, rotation)
+    # Only the F7 Pro's E6 payload needs its scan origin flipped. The PNG keeps
+    # the unrotated source orientation.
+    if glass.size == _F7_PRO:
+        glass = glass.transpose(Image.Transpose.ROTATE_180)
     halves = glass.size == _SEEED_13_3
     # The 13.3"'s controllers read it a quarter turn clockwise from the landscape
     # glass, as Pimoroni's driver turns it.
