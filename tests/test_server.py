@@ -345,8 +345,9 @@ def test_the_bigme_f7_pro_has_native_png_and_e6_pages(ext_eink_panel):
     ext_eink_panel.status.frame = (Image.new("P", (1024, 600), 1), 0)
 
     assert _size(_fetch(ext_eink_panel.base + "/frame.png")[2]) == (1024, 600)
-    status, _headers, body = _fetch(ext_eink_panel.base + "/frame.e6")
+    status, headers, body = _fetch(ext_eink_panel.base + "/frame.e6")
     assert status == 200
+    assert re.fullmatch(r"\d{2}:\d{2}", headers["X-Server-Time-Local"])
     assert struct.unpack_from("<HHI", body, 8) == (1024, 600, 307_200)
     assert len(body) == 20 + 307_200
 

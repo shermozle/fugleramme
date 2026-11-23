@@ -113,12 +113,10 @@ def test_the_bigme_f7_pro_rows_split_between_its_two_controllers():
     assert struct.unpack_from("<HHI", data, 8) == (1024, 600, 307_200)
     assert len(data) == 20 + 307_200
     payload = data[20:]
-    last_row = 599 * 512
-    assert payload[0] == 0x11
-    assert payload[last_row] == 0x61  # the original top-right, now bottom-left
-    assert payload[last_row + 255] == 0x15  # the original (512, 0)
-    assert payload[last_row + 256] == 0x31  # the original (511, 0)
-    assert payload[-1] == 0x10  # the original top-left, now bottom-right
+    assert payload[0] == 0x01
+    assert payload[255] == 0x13  # left controller's last pixel pair
+    assert payload[256] == 0x51  # right controller's first pixel pair
+    assert payload[511] == 0x16
     assert payload[512] == 0x11  # the next row starts back on the left
 
 

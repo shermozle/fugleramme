@@ -251,7 +251,7 @@ def make_handler(
             self.end_headers()
             self._body(body)
 
-        def _send_cached(self, body: bytes, content_type: str):
+        def _send_cached(self, body: bytes, content_type: str, extra: dict[str, str] | None = None):
             # no-cache + ETag lets an unchanged refresh return a bodyless 304.
             etag = _etag(body)
             if self.headers.get("If-None-Match") == etag:
@@ -264,6 +264,8 @@ def make_handler(
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-cache")
             self.send_header("ETag", etag)
+            for name, value in (extra or {}).items():
+                self.send_header(name, value)
             self.end_headers()
             self._body(body)
 
@@ -501,7 +503,10 @@ def make_handler(
             poll = store.get().refresh_minutes
             if packed is None or packed[0] is not frame or packed[1] != poll:
                 packed = (frame, poll, e6.encode(*frame, poll))
-            self._send_cached(packed[2], "application/octet-stream")
+            local_time = time.strftime("%H:%M", time.localtime())
+            self._send_cached(
+                packed[2], "application/octet-stream", {"X-Server-Time-Local": local_time}
+            )
 
         def _frame_png(self):
             # For a panel driven through inky: in the panel's native orientation, so it

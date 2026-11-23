@@ -290,9 +290,7 @@ are the right halves for the second. The 7.3" panel has one, which takes every
 row in turn, top to bottom. The BigMe F7 Pro has two 512×600 controllers: each
 1024-pixel row is sent as 256 bytes to the left controller followed by 256
 bytes to the right. This is the ordinary row-major byte stream, so the client
-alternates chip select every 256 bytes. Its E6 payload applies a 180°
-scan-origin flip; `/frame.png` keeps the unrotated source orientation. With a
-different Inky connected, the
+alternates chip select every 256 bytes. With a different Inky connected, the
 file carries that panel's page, which its width and height reveal, so check them.
 
 The response carries an `ETag`; send it back as `If-None-Match` and an
